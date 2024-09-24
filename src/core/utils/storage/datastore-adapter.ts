@@ -6,4 +6,12 @@ export class DatastoreAdapter {
     private readonly sqlAdapter: SQLStorageAdapter,
     private readonly kvAdapter: KvStorageAdapter,
   ) {}
+
+  performQuery = async <T>(query: string): Promise<T> => {
+    return this.sqlAdapter.performQuery(query);
+  };
+
+  prepareStatement = async (statement: string) => {
+    return this.sqlAdapter.prepareStatement(statement);
+  };
 }

@@ -1,19 +1,25 @@
 import { PropsWithChildren, useMemo } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { useTheme } from "../utils";
 
-export const Card = (props: PropsWithChildren) => {
+export const Card = (
+  props: PropsWithChildren<{ style?: StyleProp<ViewStyle> }>,
+) => {
   const { currentTheme, themes } = useTheme();
   const themeStyle = useMemo(
     () => ({
-      backgroundColor: themes[currentTheme].background,
+      backgroundColor: themes[currentTheme].background.primary,
       paddingVertical: themes[currentTheme].padding,
       paddingHorizontal: themes[currentTheme].padding * 2,
     }),
     [themes, currentTheme],
   );
 
-  return <View style={[style.container, themeStyle]}>{props.children}</View>;
+  return (
+    <View style={[style.container, themeStyle, props.style]}>
+      {props.children}
+    </View>
+  );
 };
 
 const style = StyleSheet.create({

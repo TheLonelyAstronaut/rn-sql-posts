@@ -12,6 +12,13 @@ export class NavigationService {
 
   enablePerformanceTweaks = (enable: boolean) => {
     enableScreens(enable);
-    enableFreeze(enable);
+
+    /*
+      You could enable this, it will increase performance
+      in nested stacks, but for this project i'll leave it disabled
+      (no deeply nested stacks)
+    */
+
+    //enableFreeze(enable);
   };
 }

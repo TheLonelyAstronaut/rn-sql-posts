@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   SafeAreaProvider,
   initialWindowMetrics,
@@ -21,6 +21,8 @@ import {
   AppThemes,
   AppLanguages,
 } from "@/core";
+import { UsersRepository } from "@/entities/user";
+import { CommentsRepository } from "@/entities/comment";
 
 export const withAppBootstrap = <T,>(Component: React.ComponentType<T>) => {
   const navigation = new NavigationService();
@@ -37,30 +39,46 @@ export const withAppBootstrap = <T,>(Component: React.ComponentType<T>) => {
   const datastoreAdapter = new DatastoreAdapter(sqlAdapter, kvAdapter);
   const datastore = new CoreDatastore(datastoreAdapter);
 
+  const usersRepository = new UsersRepository(datastore);
+  const commentsRepository = new CommentsRepository(datastore);
+
   splash.preventAutoHide();
   navigation.enablePerformanceTweaks(true);
 
   const diContext = { container: new Map() };
-  const themeContext = { currentTheme: AppThemes.LIGHT };
-  const i18nContext = { currentLocale: AppLanguages.EN };
 
   diContext.container.set(NavigationService, navigation);
   diContext.container.set(SplashScreenService, splash);
   diContext.container.set(AnalyticsService, analyticsService);
   diContext.container.set(Logger, logger);
   diContext.container.set(CoreDatastore, datastore);
+  diContext.container.set(UsersRepository, usersRepository);
+  diContext.container.set(CommentsRepository, commentsRepository);
 
   return (props: T & JSX.IntrinsicAttributes) => {
-    useEffect(() => {
-      // Simulating network request, background auth and other things
+    const [isReady, setReady] = useState(false);
+
+    const init = useCallback(async () => {
+      await sqlAdapter.init();
+      await usersRepository.initDatastore();
+      await commentsRepository.initDatastore();
+
+      setReady(true);
+
       setTimeout(() => splash.hide(), 500);
     }, []);
+
+    useEffect(() => {
+      init().catch(alert);
+    }, [init]);
+
+    if (!isReady) return null;
 
     return (
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <DIProvider value={diContext}>
-          <ThemeProvider value={themeContext}>
-            <I18nProvider value={i18nContext}>
+          <ThemeProvider>
+            <I18nProvider>
               <SessionProvider>
                 <Component {...props} />
               </SessionProvider>

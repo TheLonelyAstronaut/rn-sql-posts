@@ -3,12 +3,25 @@ type AppStrings = {
     home: string;
     addPost: string;
     post: string;
+    signIn: string;
+    settings: string;
+  };
+  buttons: {
+    signIn: string;
+    signOut: string;
+    changeTheme: string;
+    changeLanguage: string;
+  };
+  inputs: {
+    email: string;
+    username: string;
+    password: string;
   };
 };
 
 export enum AppLanguages {
-  EN,
-  RU,
+  EN = "EN",
+  RU = "RU",
 }
 
 export const locales: Record<AppLanguages, AppStrings> = {
@@ -17,6 +30,19 @@ export const locales: Record<AppLanguages, AppStrings> = {
       home: "Home",
       addPost: "Add post",
       post: "Post",
+      signIn: "Welcome to Posts",
+      settings: "Settings",
+    },
+    buttons: {
+      signIn: "Sign in",
+      signOut: "Sign out",
+      changeTheme: "Change theme",
+      changeLanguage: "Change language",
+    },
+    inputs: {
+      email: "Email",
+      username: "User name",
+      password: "Password",
     },
   },
   [AppLanguages.RU]: {
@@ -24,6 +50,19 @@ export const locales: Record<AppLanguages, AppStrings> = {
       home: "Главная",
       addPost: "Добавить запись",
       post: "Запись",
+      signIn: "Добро пожаловать",
+      settings: "Настройки",
+    },
+    buttons: {
+      signIn: "Войти",
+      signOut: "Выйти",
+      changeTheme: "Сменить тему",
+      changeLanguage: "Сменить язык",
+    },
+    inputs: {
+      email: "Электронная почта",
+      username: "Имя пользователя",
+      password: "Пароль",
     },
   },
 };
