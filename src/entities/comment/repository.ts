@@ -6,6 +6,7 @@ import {
   CREATE_COMMENTS_TABLE,
   SELECT_COMMENTS,
 } from "./queries";
+import { Comment } from "./model";
 
 export class CommentsRepository {
   private _countTreeNodes: SQLStatement = null!;
@@ -25,9 +26,28 @@ export class CommentsRepository {
       ]);
   };
 
-  countTreeNodes = async () => {};
+  countTreeNodes = async () => {
+    return this._countTreeNodes
+      .executeAsync()
+      .then((r) => r.getAllAsync())
+      .catch(console.log);
+  };
 
-  createComment = async (comment: Comment) => {};
+  createComment = async (comment: Comment) => {
+    return this._createComment
+      .executeAsync({
+        $id: comment.id,
+        $content: comment.content,
+        $author_id: comment.author.id,
+        $date: comment.date.getTime(),
+      })
+      .then((r) => r.getAllAsync());
+  };
 
-  selectComments = async (pageSize: number, pageNumber: number) => {};
+  selectComments = async (pageSize: number, pageNumber: number) => {
+    return this._selectComments
+      .executeAsync({ $limit: pageSize, $offset: pageNumber * pageSize })
+      .then((r) => r.getAllAsync());
+    //return [];
+  };
 }

@@ -3,7 +3,6 @@ export * from "./di";
 export * from "./i18n";
 export * from "./logging";
 export * from "./navigation";
-//export * from './pagination';
 export * from "./splash";
 export * from "./storage";
 export * from "./theme";

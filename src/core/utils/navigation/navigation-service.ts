@@ -18,7 +18,6 @@ export class NavigationService {
       in nested stacks, but for this project i'll leave it disabled
       (no deeply nested stacks)
     */
-
     //enableFreeze(enable);
   };
 }

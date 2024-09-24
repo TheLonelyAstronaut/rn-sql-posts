@@ -11,7 +11,7 @@ export const CREATE_USERS_TABLE = `
 
 export const FIND_USER_WITH_DATA = `SELECT id, username, email FROM users WHERE username=$username OR email=$email;`;
 
-export const VERIFY_USER = `SELECT id, username, email, avatar FROM users WHERE username=$username AND password_hash=password_hash AND email=$email;`;
+export const VERIFY_USER = `SELECT id, username, email, avatar FROM users WHERE username=$username AND password_hash=$password_hash AND email=$email;`;
 
 export const CREATE_USER = `INSERT INTO users (id, email, username, password_hash, avatar) VALUES ($id, $email, $username, $password_hash, $avatar);`;
 

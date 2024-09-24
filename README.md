@@ -37,12 +37,11 @@ FROM
 LEFT JOIN
     comments AS child
 ON
-    child.id LIKE parent.id || '.%'             -- Дети узлов имеют id, начинающиеся с id родительского узла + "."
-    AND LENGTH(child.id) - LENGTH(parent.id) = LENGTH('.X')  -- Непосредственные дети имеют на один уровень больше
+    child.id LIKE parent.id || '.%'  -- Дети узлов имеют id, начинающиеся с id родительского узла + "."
+    AND (LENGTH(child.id) - LENGTH(REPLACE(child.id, '.', ''))) = (LENGTH(parent.id) - LENGTH(REPLACE(parent.id, '.', '')) + 1)
+    -- Считаем количество точек: у ребенка должно быть на одну точку больше
 GROUP BY
     parent.id
-HAVING
-    COUNT(child.id) > 0                        -- Фильтрация только узлов с детьми
 ORDER BY
     parent.id;
 

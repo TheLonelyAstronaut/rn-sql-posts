@@ -8,6 +8,13 @@ import {
 } from "./queries";
 import { User } from "./model";
 
+export enum UserVerificationStatus {
+  Verified,
+  IncorrectPassword,
+  DataAlreadyExists,
+  NotExist,
+}
+
 export class UsersRepository {
   private _createUser: SQLStatement = null!;
   private _verifyUser: SQLStatement = null!;
@@ -32,9 +39,63 @@ export class UsersRepository {
     ]);
   };
 
-  createUser = (user: User) => {};
+  createUser = async (user: User) => {
+    await this._createUser
+      .executeAsync({
+        $id: user.id,
+        $email: user.email,
+        $username: user.username,
+        $password_hash: user.passwordHash ?? "",
+        $avatar: user.avatar,
+      })
+      .then((r) => r.getAllAsync());
 
-  verifyUser = (user: User) => {};
+    return user.id;
+  };
 
-  getUserById = (id: string) => {};
+  verifyUser = async (
+    user: User,
+  ): Promise<UserVerificationStatus | User["id"]> => {
+    const existingData = await this._findUserWithData
+      .executeAsync({
+        $username: user.username,
+        $email: user.email,
+      })
+      .then((r) => r.getFirstAsync() as Partial<User>);
+
+    if (
+      !!existingData &&
+      (existingData.email !== user.email ||
+        existingData.username !== user.username)
+    ) {
+      return UserVerificationStatus.DataAlreadyExists;
+    } else if (!existingData) {
+      return UserVerificationStatus.NotExist;
+    }
+
+    const verifiedUser = await this._verifyUser
+      .executeAsync({
+        $username: user.username,
+        $email: user.email,
+        $password_hash: user.passwordHash ?? "",
+      })
+      .then((r) => r.getFirstAsync() as Partial<User>);
+
+    return !!verifiedUser
+      ? verifiedUser.id ?? ""
+      : UserVerificationStatus.IncorrectPassword;
+  };
+
+  getUserById = async (id: string): Promise<User> => {
+    return this._getUserById
+      .executeAsync({
+        $id: id,
+      })
+      .then(async (r) => {
+        const data = await r.getFirstAsync();
+
+        if (!data) throw new Error("No such user!");
+        return new User(data as unknown as User);
+      });
+  };
 }

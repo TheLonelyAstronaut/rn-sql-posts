@@ -9,7 +9,11 @@ export class SQLiteAdapter implements SQLStorageAdapter {
   };
 
   async performQuery<T>(query: string): Promise<T> {
-    return this.db.runAsync(query);
+    return this.db.execAsync(query);
+  }
+
+  async getAll<T>(query: string): Promise<T> {
+    return this.db.getAllAsync(query);
   }
 
   prepareStatement(statement: string): Promise<SQLStatement> {

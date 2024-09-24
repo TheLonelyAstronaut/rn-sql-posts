@@ -23,6 +23,7 @@ import {
 } from "@/core";
 import { UsersRepository } from "@/entities/user";
 import { CommentsRepository } from "@/entities/comment";
+import { FeedRepository } from "@/entities/feed/repository";
 
 export const withAppBootstrap = <T,>(Component: React.ComponentType<T>) => {
   const navigation = new NavigationService();
@@ -41,6 +42,7 @@ export const withAppBootstrap = <T,>(Component: React.ComponentType<T>) => {
 
   const usersRepository = new UsersRepository(datastore);
   const commentsRepository = new CommentsRepository(datastore);
+  const feedRepository = new FeedRepository(commentsRepository);
 
   splash.preventAutoHide();
   navigation.enablePerformanceTweaks(true);
@@ -54,6 +56,7 @@ export const withAppBootstrap = <T,>(Component: React.ComponentType<T>) => {
   diContext.container.set(CoreDatastore, datastore);
   diContext.container.set(UsersRepository, usersRepository);
   diContext.container.set(CommentsRepository, commentsRepository);
+  diContext.container.set(FeedRepository, feedRepository);
 
   return (props: T & JSX.IntrinsicAttributes) => {
     const [isReady, setReady] = useState(false);
@@ -70,7 +73,7 @@ export const withAppBootstrap = <T,>(Component: React.ComponentType<T>) => {
 
     useEffect(() => {
       init().catch(alert);
-    }, [init]);
+    }, []);
 
     if (!isReady) return null;
 

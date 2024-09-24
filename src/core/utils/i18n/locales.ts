@@ -11,6 +11,8 @@ type AppStrings = {
     signOut: string;
     changeTheme: string;
     changeLanguage: string;
+    send: string;
+    enterText: string;
   };
   inputs: {
     email: string;
@@ -38,6 +40,8 @@ export const locales: Record<AppLanguages, AppStrings> = {
       signOut: "Sign out",
       changeTheme: "Change theme",
       changeLanguage: "Change language",
+      send: "Send",
+      enterText: "Enter text...",
     },
     inputs: {
       email: "Email",
@@ -58,6 +62,8 @@ export const locales: Record<AppLanguages, AppStrings> = {
       signOut: "Выйти",
       changeTheme: "Сменить тему",
       changeLanguage: "Сменить язык",
+      send: "Отправить",
+      enterText: "Введите текст...",
     },
     inputs: {
       email: "Электронная почта",

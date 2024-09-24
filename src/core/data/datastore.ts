@@ -7,6 +7,10 @@ export class CoreDatastore {
     return this.adapter.performQuery(query);
   };
 
+  getAll = async <T>(query: string): Promise<T> => {
+    return this.adapter.getAll(query);
+  };
+
   prepareStatement = async (statement: string) => {
     return this.adapter.prepareStatement(statement);
   };
