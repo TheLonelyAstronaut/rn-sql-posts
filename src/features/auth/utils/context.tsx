@@ -1,11 +1,12 @@
-import { useKvStorageState } from "@/core";
-import { User } from "@/entities/user";
+import { useContainerInstance, useKvStorageState } from "@/core";
+import { User, UsersRepository } from "@/entities/user";
 import {
   useContext,
   createContext,
   type PropsWithChildren,
   useMemo,
   useCallback,
+  useEffect,
 } from "react";
 
 const AuthContext = createContext<{
@@ -26,6 +27,8 @@ export const useSession = () => {
 
 export const SessionProvider = ({ children }: PropsWithChildren) => {
   const [[isLoading, session], setSession] = useKvStorageState("session");
+  const repo = useContainerInstance(UsersRepository);
+
   const _user = useMemo(() => {
     if (!session) return null;
 
@@ -40,6 +43,12 @@ export const SessionProvider = ({ children }: PropsWithChildren) => {
   const signOut = useCallback(() => {
     setSession(null);
   }, [setSession]);
+
+  useEffect(() => {
+    if (!!_user) {
+      repo.getUserById(_user.id).catch(signOut);
+    }
+  }, [_user, signOut]);
 
   return (
     <AuthContext.Provider

@@ -7,30 +7,32 @@ type TreeNode = { node_id: string; children_count: 0 };
 export class FeedRepository {
   constructor(private readonly commentsRepository: CommentsRepository) {}
 
-  // 1. PageNumber === 0
-  //    - Fetch/calulate threads and its sizes
-  //    - Create first feed page with nested structure
-  // 2. PageNumber !== 0
-  //    - Get paginated data
-  //    - Merge with existing feed via `Feed::copyWith` outside repo
   getPaginatedFeed = async (
-    pageNumber: number,
     pageSize: number,
+    offset: number,
   ): Promise<Feed> => {
-    if (pageNumber === 0) {
-      const [comments, nodes] = (await Promise.all([
-        this.commentsRepository.selectComments(pageSize, pageNumber),
-        this.commentsRepository.countTreeNodes(),
-      ])) as unknown as [Array<Comment>, Array<TreeNode>];
+    const [comments, nodes] = (await Promise.all([
+      this.commentsRepository.selectComments(pageSize, offset),
+      this.commentsRepository.countTreeNodes(),
+    ])) as unknown as [Array<Comment>, Array<TreeNode>];
 
-      const threads = Object.values(buildThreesWithNodes(nodes));
+    console.log(comments.map((c) => c.id));
 
-      return new Feed({
-        threads: fillThreadsWithComments(threads, comments).reverse(),
-      });
-    } else {
-      return new Feed({});
-    }
+    return new Feed({
+      comments: comments,
+      threadsCount: nodes.reduce(
+        (map, n) => {
+          map.set(n.node_id, n.children_count);
+
+          if (n.node_id.indexOf(".") === -1) {
+            map.set("root", map.get("root")! + 1);
+          }
+
+          return map;
+        },
+        new Map<string, number>([["root", 0]]),
+      ),
+    });
   };
 
   addComment = async (comment: Comment) => {

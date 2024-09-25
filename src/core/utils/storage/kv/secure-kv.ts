@@ -1,3 +1,3 @@
-import { KvStorageAdapter } from "./kv";
+import { KvStorageAdapter } from "./kv-adapter";
 
 export class SecureKvStorage implements KvStorageAdapter {}

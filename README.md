@@ -54,3 +54,12 @@ SELECT COUNT(DISTINCT(SUBSTRING(id, 1, INSTR(id, '.') OR LENGTH(id)))) as total 
 
 // Create comment
 INSERT INTO comments (id, content, author_id, date) VALUES ('1', 'test', 'first_user', 0)
+
+// NEW APPROACH: working with data without tree nodes count
+SELECT *
+FROM comments
+ORDER BY
+    LENGTH(id) - LENGTH(REPLACE(id, '.', '')) ASC,  -- Сортировка по уровню вложенности (корневые узлы первыми)
+    id DESC                                         -- Сортировка по убыванию внутри каждого уровня
+LIMIT $limit                                            -- Количество строк на странице (например, 10)
+OFFSET $offset;                                          -- Пропуск первых 20 строк (например, для страницы 3)

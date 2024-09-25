@@ -7,6 +7,10 @@ import {
   SELECT_COMMENTS,
 } from "./queries";
 import { Comment } from "./model";
+import { User } from "../user";
+
+type JoinedComment = Omit<Comment, "author"> &
+  Omit<User, "id"> & { user_id: string };
 
 export class CommentsRepository {
   private _countTreeNodes: SQLStatement = null!;
@@ -44,10 +48,25 @@ export class CommentsRepository {
       .then((r) => r.getAllAsync());
   };
 
-  selectComments = async (pageSize: number, pageNumber: number) => {
+  selectComments = async (
+    pageSize: number,
+    offset: number,
+  ): Promise<Array<Comment>> => {
     return this._selectComments
-      .executeAsync({ $limit: pageSize, $offset: pageNumber * pageSize })
-      .then((r) => r.getAllAsync());
+      .executeAsync({ $limit: pageSize, $offset: offset })
+      .then((r) => r.getAllAsync() as Promise<Array<JoinedComment>>)
+      .then((d) =>
+        d.map(
+          (merged) =>
+            new Comment({
+              ...merged,
+              author: new User({
+                ...merged,
+                id: merged.user_id,
+              }),
+            }),
+        ),
+      );
     //return [];
   };
 }

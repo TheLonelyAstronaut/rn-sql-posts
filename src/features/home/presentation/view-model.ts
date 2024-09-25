@@ -11,7 +11,7 @@ export const useHomeScreenViewModel = () => {
   const [isLoading, setLoading] = useState(true);
   const repo = useContainerInstance(FeedRepository);
 
-  const [feed, _setFeed] = useState(new Feed({}));
+  const [feed, _setFeed] = useState(Feed.empty);
   const _shadowFeed = useRef(feed);
   const setFeed = useCallback((feed: Feed) => {
     _setFeed(feed);
@@ -24,14 +24,14 @@ export const useHomeScreenViewModel = () => {
     setLoading(true);
 
     repo
-      .getPaginatedFeed(0, PAGE_SIZE)
+      .getPaginatedFeed(PAGE_SIZE, 0)
       .then(setFeed)
       .finally(() => setLoading(false));
   }, []);
 
   const handleAddTopThread = useCallback(async (text: string, user: User) => {
     const comment = new Comment({
-      id: _shadowFeed.current.nextThreadId(),
+      id: _shadowFeed.current.nextCommentId(),
       author: user,
       content: text,
       date: new Date(),

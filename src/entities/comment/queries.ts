@@ -27,4 +27,32 @@ export const COUNT_TREE_NODES = `
 
 export const CREATE_COMMENT = `INSERT INTO comments (id, content, author_id, date) VALUES ($id, $content, $author_id, $date);`;
 
-export const SELECT_COMMENTS = `SELECT * FROM comments ORDER BY SUBSTRING(id, 1, INSTR(id, '.') OR LENGTH(id)) DESC LIMIT $limit OFFSET $offset;`;
+export const SELECT_COMMENTS = `
+  SELECT
+      c.id,
+      c.content,
+      c.date,
+      u.username,
+      u.email,
+      u.avatar,
+      u.id AS user_id
+  FROM
+      comments c
+  LEFT JOIN
+      users u
+  ON
+      c.author_id = u.id
+  ORDER BY
+      LENGTH(c.id) - LENGTH(REPLACE(c.id, '.', '')),
+      CAST(SUBSTR(c.id, 1, INSTR(c.id || '.', '.') - 1) AS INTEGER),
+      CASE
+          WHEN INSTR(c.id, '.') > 0 THEN CAST(SUBSTR(c.id, INSTR(c.id, '.') + 1,
+              INSTR(c.id || '.', '.', INSTR(c.id, '.') + 1) - INSTR(c.id, '.') - 1) AS INTEGER)
+          ELSE NULL END,
+      CASE
+          WHEN LENGTH(c.id) - LENGTH(REPLACE(c.id, '.', '')) > 1 THEN
+              CAST(SUBSTR(c.id, INSTR(c.id, '.', INSTR(c.id, '.') + 1) + 1) AS INTEGER)
+          ELSE NULL END
+  LIMIT $limit
+  OFFSET $offset;
+`;

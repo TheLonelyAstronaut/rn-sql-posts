@@ -24,11 +24,11 @@ export const HomeScreen = () => {
     <ScreenContainer>
       <View style={{ flex: 1, width: "100%" }}>
         <List
-          data={feed.threads}
+          data={feed.comments}
           keyExtractor={(i) => i.id}
           renderItem={({ item }) => (
             <Card>
-              <Text>{item.rootComment.content}</Text>
+              <Text>{item.content}</Text>
             </Card>
           )}
           loading={isLoading}
