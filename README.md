@@ -29,9 +29,13 @@ yarn release:ios
 Project was created with feature-based architecture and declarative routing.
 
 app - app with react files, this directory is used by Expo Router for generating navigation tree
+
 core - central dependencies of app, this module could be shared between apps cause it does not contain any app-specific logic
+
 entites - contains domain models, repositories and SQL queries
+
 features - independent app features
+
 - home - posts CRUD features
 - settings - customizations features
 - auth - users CRUD features
