@@ -5,6 +5,8 @@
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
+    "release:android": "eas build --platform android --local",
+    "release:ios": "eas build --platform ios --local",
     "ios": "expo start --ios",
     "lint": "expo lint",
     "postinstall": "patch-package"

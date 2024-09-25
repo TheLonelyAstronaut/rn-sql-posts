@@ -1,4 +1,5 @@
 import { FlashList, ListRenderItem } from "@shopify/flash-list";
+import React, { createRef, forwardRef } from "react";
 import { ActivityIndicator } from "react-native";
 
 export type ListProps<T> = {
@@ -9,20 +10,35 @@ export type ListProps<T> = {
   header?: React.ComponentType;
   itemSize?: number;
   loading?: boolean;
+  onEndReached: () => void;
 };
 
-export const List = <T,>(props: ListProps<T>) => {
-  return (
-    <FlashList
-      ItemSeparatorComponent={props.separator}
-      ListHeaderComponent={props.header}
-      contentInsetAdjustmentBehavior="automatic"
-      data={props.data}
-      keyExtractor={props.keyExtractor}
-      renderItem={props.renderItem}
-      estimatedItemSize={props.itemSize ?? 100}
-      contentContainerStyle={{ padding: 16 }}
-      ListFooterComponent={props.loading ? ActivityIndicator : undefined}
-    />
-  );
-};
+export class List<T> extends React.Component<ListProps<T>> {
+  private scrollRef = createRef<FlashList<T>>();
+
+  srollToItem = (item: T, offset = 80) => {
+    this.scrollRef.current?.scrollToItem({
+      animated: true,
+      item,
+      viewOffset: offset,
+    });
+  };
+
+  render(): React.ReactNode {
+    return (
+      <FlashList
+        ref={this.scrollRef}
+        ItemSeparatorComponent={this.props.separator}
+        ListHeaderComponent={this.props.header}
+        contentInsetAdjustmentBehavior="automatic"
+        data={this.props.data}
+        keyExtractor={this.props.keyExtractor}
+        renderItem={this.props.renderItem}
+        estimatedItemSize={this.props.itemSize ?? 100}
+        contentContainerStyle={{ padding: 16 }}
+        onEndReached={this.props.onEndReached}
+        ListFooterComponent={this.props.loading ? ActivityIndicator : undefined}
+      />
+    );
+  }
+}

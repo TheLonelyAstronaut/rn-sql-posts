@@ -11,6 +11,10 @@ export class DatastoreAdapter {
     return this.sqlAdapter.performQuery(query);
   };
 
+  runQuery = async <T>(query: string): Promise<T> => {
+    return this.sqlAdapter.runQuery(query);
+  };
+
   getAll = async <T>(query: string): Promise<T> => {
     return this.sqlAdapter.getAll(query);
   };

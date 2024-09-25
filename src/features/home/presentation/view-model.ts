@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 const PAGE_SIZE = 25;
 
 export const useHomeScreenViewModel = () => {
-  const [isLoading, setLoading] = useState(true);
+  const [isLoading, setLoading] = useState(false);
   const repo = useContainerInstance(FeedRepository);
 
   const [feed, _setFeed] = useState(Feed.empty);
@@ -18,36 +18,47 @@ export const useHomeScreenViewModel = () => {
     _shadowFeed.current = feed;
   }, []);
 
-  const pageNumber = useRef(0);
+  const hasNextPage = useRef(true);
 
-  useEffect(() => {
-    setLoading(true);
+  const loadNextPage = useCallback(() => {
+    if (!hasNextPage.current) return;
+
+    console.log("NEXT PAGE");
 
     repo
-      .getPaginatedFeed(PAGE_SIZE, 0)
-      .then(setFeed)
-      .finally(() => setLoading(false));
-  }, []);
+      .getPaginatedFeed(PAGE_SIZE, _shadowFeed.current.comments.length)
+      .then((r) => {
+        if (r.comments.length < PAGE_SIZE) hasNextPage.current = false;
 
-  const handleAddTopThread = useCallback(async (text: string, user: User) => {
-    const comment = new Comment({
-      id: _shadowFeed.current.nextCommentId(),
-      author: user,
-      content: text,
-      date: new Date(),
-    });
+        setFeed(_shadowFeed.current.merge(r));
+      });
+  }, [setFeed]);
 
-    try {
-      await repo.addComment(comment);
-      setFeed(_shadowFeed.current.addComment(comment, true));
-    } catch (e) {
-      alert(e);
-    }
-  }, []);
+  const handleAddComment = useCallback(
+    async (text: string, user: User, parent = "root") => {
+      const comment = new Comment({
+        id: _shadowFeed.current.nextCommentId(parent),
+        author: user,
+        content: text,
+        date: new Date(),
+      });
+
+      try {
+        await repo.addComment(comment);
+        setFeed(_shadowFeed.current.addComment(comment));
+      } catch (e) {
+        _shadowFeed.current.revertCommentId(comment.id, parent);
+        alert(e);
+      }
+    },
+    [],
+  );
 
   return {
     isLoading,
-    handleAddTopThread,
+    handleAddComment,
     feed,
+    shallowFeed: _shadowFeed,
+    loadNextPage,
   };
 };

@@ -5,6 +5,7 @@ import {
   TextInput,
   TextInputRef,
   useLocale,
+  Text,
 } from "@/core";
 import { useSession } from "@/features/auth";
 import { Avatar } from "./avatar";
@@ -14,6 +15,7 @@ import { User } from "@/entities/user";
 
 export type AddCommentProps = {
   onSubmit: (text: string, user: User) => void;
+  replyFor?: string;
 };
 
 export const AddComment = (props: AddCommentProps) => {
@@ -24,9 +26,9 @@ export const AddComment = (props: AddCommentProps) => {
   const textInputRef = useRef<TextInputRef>();
 
   const onChangeText = useCallback((data: string) => {
-    setValid(!!data.length);
+    setValid(!!data.trim().length);
 
-    text.current = data;
+    text.current = data.trim();
   }, []);
 
   const onSubmit = useCallback(() => {
@@ -42,6 +44,15 @@ export const AddComment = (props: AddCommentProps) => {
       <View style={style.container}>
         <Avatar url={session.avatar} />
         <View style={style.textHolder}>
+          {!!props.replyFor && (
+            <Text size="small" color="secondary">
+              {locales[currentLocale].buttons.replyFor}
+              <Text size="small" color="primary">
+                {props.replyFor}
+              </Text>
+            </Text>
+          )}
+          <DefaultSeparator />
           <TextInput
             ref={textInputRef}
             onChangeText={onChangeText}

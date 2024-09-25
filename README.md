@@ -1,65 +1,59 @@
-// 1. Create tables
+## RN Shopy
 
-CREATE TABLE IF NOT EXISTS users (
-  id TEXT PRIMARY KEY NOT NULL,
-  username TEXT NOT NULL,
-  email TEXT NOT NULL,
-  passwordHash TEXT NOT NULL,
-  avatar TEXT NOT NULL,
-  CONSTRAINT uc_users UNIQUE (username,email)
-);
+Install deps and configure build pipeline:
 
-CREATE TABLE IF NOT EXISTS comments (
-  id TEXT PRIMARY KEY NOT NULL,
-  content TEXT NOT NULL,
-  author_id TEXT NOT NULL,
-  date INTEGER NOT NULL,
-  FOREIGN KEY (author_id) REFERENCES users (id)
-);
+```
+// Install deps
+yarn
 
-// 2. Check if user exists and all data fields are matching
-SELECT id, username, email FROM users WHERE username='test' OR email='test';
+// Launch expo server, press I or A to open iOS or Android sim in debug mode
+// yarn start
 
-// 2.1 If exists, check if paswword hash match
-SELECT id, username, email, avatar  FROM users WHERE username='test' AND passwordHash='test' AND email='test';
+// Install eas-cli for production build
+npm install -g eas-cli
 
-// 2.2 If not, create user
-INSERT INTO users (id, email, username, passwordHash, avatar) VALUES ('second_user', 'test1', 'test1', 'test1', 'test1');
+// Login to eas
+eas login
 
-// 2.3 If exists but not matched, throw error
+// Configure eas.json and app.json for your build and account (or simply remove project id from app.json)
 
-// 3. Select threads and their direct children count
-SELECT
-    parent.id AS node_id,
-    COUNT(child.id) AS children_count
-FROM
-    comments AS parent
-LEFT JOIN
-    comments AS child
-ON
-    child.id LIKE parent.id || '.%'  -- Дети узлов имеют id, начинающиеся с id родительского узла + "."
-    AND (LENGTH(child.id) - LENGTH(REPLACE(child.id, '.', ''))) = (LENGTH(parent.id) - LENGTH(REPLACE(parent.id, '.', '')) + 1)
-    -- Считаем количество точек: у ребенка должно быть на одну точку больше
-GROUP BY
-    parent.id
-ORDER BY
-    parent.id;
+// Run android prod build
+yarn release:android
 
-// 3. Get data from db
-// Starting from parsing first part of index, cause top-level comments sould be ordered by desc
-SELECT * FROM comments ORDER BY SUBSTRING(id, 1, INSTR(id, '.') OR LENGTH(id)) DESC LIMIT 25 OFFSET 0;
+// For iOS, you need paid account to launch in production mode, configure in promts by running
+yarn release:ios
+```
 
-// Unique count
-SELECT COUNT(DISTINCT(SUBSTRING(id, 1, INSTR(id, '.') OR LENGTH(id)))) as total FROM comments;
+## About
 
-// Create comment
-INSERT INTO comments (id, content, author_id, date) VALUES ('1', 'test', 'first_user', 0)
+Project was created with feature-based architecture and declarative routing.
 
-// NEW APPROACH: working with data without tree nodes count
-SELECT *
-FROM comments
-ORDER BY
-    LENGTH(id) - LENGTH(REPLACE(id, '.', '')) ASC,  -- Сортировка по уровню вложенности (корневые узлы первыми)
-    id DESC                                         -- Сортировка по убыванию внутри каждого уровня
-LIMIT $limit                                            -- Количество строк на странице (например, 10)
-OFFSET $offset;                                          -- Пропуск первых 20 строк (например, для страницы 3)
+app - app with react files, this directory is used by Expo Router for generating navigation tree
+core - central dependencies of app, this module could be shared between apps cause it does not contain any app-specific logic
+entites - contains domain models, repositories and SQL queries
+features - independent app features
+- home - posts CRUD features
+- settings - customizations features
+- auth - users CRUD features
+- bootstrap - glue for all layers, app launches from this code
+
+## Features
+
+### What's done
+
+- auth (regexp on each field; email should be valid; name should contain at least 8 symbols; password should contain at least 8 symbols; including one capital and one symbol)
+- theming (you could switch theme in settings)
+- i18n (you could switch language in settings)
+- DI (hand-made, without inversify, located in bootstrap feature)
+- basic logging & analytics template (not used yet, but you could check this provider-based solutions inside core/utils)
+- comments (home screen UI, SQL requests, pagination)
+- security (storing current session in secure storage, using password hash)
+- performance (using react-native-screens with native navigation primitives)
+
+### What's can be done, but time is running out
+
+- optimize way of storing comments tree in SQLite, without initial precalculating of nodes and childs
+- implement KeyboardAvoidingView not only on auth screen, but also on home screen
+- inject logger and analytics classes into screen view models and collect user activity to any provider (just implement your provider and inject into wrapper)
+- #### you cannot use a username and email if they are already registered in a different pair; to log in, you must specify the same username, password, and email; if the username-email pair is not registered yet, the system will automatically register and login; this flow can be normalized by making different flows for login and registration
+- react-native-freeze was disabled cause of small UI glitch after theme switch (native header will rerender after navigation finishes). To solve this, we could use JS-only header, but again time is running out

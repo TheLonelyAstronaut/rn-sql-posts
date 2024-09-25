@@ -13,6 +13,7 @@ type AppStrings = {
     changeLanguage: string;
     send: string;
     enterText: string;
+    replyFor: string;
   };
   inputs: {
     email: string;
@@ -42,6 +43,7 @@ export const locales: Record<AppLanguages, AppStrings> = {
       changeLanguage: "Change language",
       send: "Send",
       enterText: "Enter text...",
+      replyFor: "Reply for ",
     },
     inputs: {
       email: "Email",
@@ -64,6 +66,7 @@ export const locales: Record<AppLanguages, AppStrings> = {
       changeLanguage: "Сменить язык",
       send: "Отправить",
       enterText: "Введите текст...",
+      replyFor: "Ответ на ",
     },
     inputs: {
       email: "Электронная почта",
