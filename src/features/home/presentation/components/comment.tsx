@@ -6,6 +6,13 @@ import { Avatar } from "./avatar";
 import { AddComment } from "./add-comment";
 import { User } from "@/entities/user";
 import { MaterialIcons } from "@expo/vector-icons";
+import R, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+  runOnJS,
+  useDerivedValue,
+} from "react-native-reanimated";
 
 type CommentProps = {
   comment: Comment;
@@ -23,7 +30,38 @@ export const CommentBlock = ({
   onParentCommentPress,
   onAddComment,
 }: CommentProps) => {
-  const [isOpened, setOpened] = useState(false);
+  const [isOpened, _setOpened] = useState(false);
+  const sharedHeight = useSharedValue(0);
+
+  const setOpened = useCallback((value: boolean, skipAnimation = false) => {
+    if (value) {
+      _setOpened(value);
+      sharedHeight.value = withTiming(190, { duration: 200 });
+    } else {
+      sharedHeight.value = withTiming(
+        0,
+        { duration: skipAnimation ? 0 : 200 },
+        (finished) => {
+          if (finished) {
+            runOnJS(_setOpened)(value);
+            //_setOpened(value);
+          }
+        },
+      );
+    }
+  }, []);
+
+  const opacity = useDerivedValue(() => {
+    return sharedHeight.value / 190;
+  }, []);
+
+  const animatedStyles = useAnimatedStyle(() => {
+    return {
+      height: sharedHeight.value,
+      opacity: opacity.value,
+    };
+  });
+
   const { locales, currentLocale } = useLocale();
   const { themes, currentTheme } = useTheme();
 
@@ -64,7 +102,7 @@ export const CommentBlock = ({
   }, [replyId, onParentCommentPress]);
 
   useEffect(() => {
-    setOpened(false);
+    setOpened(false, true);
   }, [comment.id]);
 
   return (
@@ -75,7 +113,7 @@ export const CommentBlock = ({
           <DefaultSeparator />
           <View style={styles.infoContainer}>
             <View style={styles.metadataContainer}>
-              <Text color="secondary">{date}</Text>
+              <Text color="secondary">{comment.author.username}</Text>
               {!!replyId && (
                 <Text
                   size="small"
@@ -92,24 +130,33 @@ export const CommentBlock = ({
             <DefaultSeparator />
             <Text>{comment.content}</Text>
             <DefaultSeparator />
-            <Pressable
-              onPress={() => setOpened((s) => !s)}
-              style={styles.replyContainer}
-            >
-              <MaterialIcons
-                name="reply"
-                size={14}
-                color={themes[currentTheme].text.primary}
-              />
-            </Pressable>
+            <View style={styles.metadataContainer}>
+              <Text size="small" color="secondary">
+                {date}
+              </Text>
+              <Pressable
+                onPress={() => setOpened(!isOpened)}
+                style={styles.replyContainer}
+              >
+                <MaterialIcons
+                  name="reply"
+                  size={14}
+                  color={themes[currentTheme].text.primary}
+                />
+              </Pressable>
+            </View>
           </View>
         </View>
       </Card>
       {!!isOpened && (
-        <>
+        <R.View style={animatedStyles}>
           <DefaultSeparator />
-          <AddComment onSubmit={_onAddComment} replyFor={comment.id} />
-        </>
+          <AddComment
+            onSubmit={_onAddComment}
+            replyFor={comment.id}
+            containerStyle={{ height: 180 }}
+          />
+        </R.View>
       )}
     </View>
   );

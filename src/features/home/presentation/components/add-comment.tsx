@@ -9,13 +9,14 @@ import {
 } from "@/core";
 import { useSession } from "@/features/auth";
 import { Avatar } from "./avatar";
-import { StyleSheet, View } from "react-native";
+import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { useCallback, useRef, useState } from "react";
 import { User } from "@/entities/user";
 
 export type AddCommentProps = {
   onSubmit: (text: string, user: User) => void;
   replyFor?: string;
+  containerStyle?: StyleProp<ViewStyle>;
 };
 
 export const AddComment = (props: AddCommentProps) => {
@@ -40,7 +41,7 @@ export const AddComment = (props: AddCommentProps) => {
   if (!session) return null;
 
   return (
-    <Card>
+    <Card style={props.containerStyle}>
       <View style={style.container}>
         <Avatar url={session.avatar} />
         <View style={style.textHolder}>

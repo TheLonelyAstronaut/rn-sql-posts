@@ -40,10 +40,6 @@ export class Feed {
     const newCount = new Map(this.threadsCount);
     const topLevel = comment.id.indexOf(".") === -1;
 
-    if (topLevel) {
-      newCount.set("root", (newCount.get("root") ?? 0) + 1);
-    }
-
     newCount.set(comment.id, 0);
 
     return new Feed({
